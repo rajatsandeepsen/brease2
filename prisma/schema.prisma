@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"  
+  previewFeatures = ["jsonProtocol"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id String @id @default(uuid())
+  name String
+  description String
+  image String
+
+  users Staff[]
+  projects Project[]
+}
+
+model Staff {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  password String
+  skills String
+  image String
+
+  department Department @relation(fields: [departmentId], references: [id])
+  departmentId String
+
+  availability availability @default(AVAILABLE)
+
+  role    Role     @default(STAFF)
+
+}
+
+enum Role {
+  HOD
+  BOSS
+  STAFF
+}
+
+enum availability {
+  AVAILABLE
+  FREE
+  BUSY
+}
+
+model Project {
+  id String @id @default(uuid())
+  name String
+  description String
+  image String
+
+  status Status @default(PENDING)
+  progress Float @default(0.00)
+
+  deadline DateTime
+  eta DateTime 
+  createdAt DateTime @default(now())
+
+  department Department @relation(fields: [departmentId], references: [id])
+  departmentId String
+
+  tasks Task[]
+  completedTasks Int @default(0)
+  totalTasks Int  @default(0)
+}
+
+enum Status {
+  INPROGRESS
+  COMPLETED
+  PENDING
+}
+
+model Task {
+  id String @id @default(uuid())
+  name String
+  description String
+
+  status Status @default(PENDING)
+  
+  project Project @relation(fields: [projectId], references: [id])
+  projectId String
+
+  workingStaff String[]
+  
+  expectedTime DateTime
+  deadline DateTime
+  createdAt DateTime @default(now())
+}
+
